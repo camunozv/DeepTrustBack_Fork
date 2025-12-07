@@ -15,5 +15,6 @@ class User(BaseModel):
     last_names: str or None = None
     disabled: bool or None = None
         
+        
 class UserInDB(User):
     hash_password:str
