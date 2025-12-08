@@ -1,6 +1,8 @@
+# Table definition here
 from pydantic import BaseModel
 
 
+# Models for user Authentication
 class Token(BaseModel):
     access_token:str
     token_type: str
@@ -14,7 +16,7 @@ class User(BaseModel):
     names: str or None = None
     last_names: str or None = None
     disabled: bool or None = None
-        
-        
+            
 class UserInDB(User):
-    hash_password:str
+    hash_password:str   
+    
