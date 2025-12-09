@@ -35,4 +35,4 @@ def post_audio(received_audio):
     analyzer = Analyzer()
     result = analyzer.analyze_audio(received_audio)
     
-    return result
+    return jsonable_encoder(result)

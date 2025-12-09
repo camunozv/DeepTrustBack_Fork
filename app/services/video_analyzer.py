@@ -7,6 +7,7 @@ class VideoAnalyzer:
     def __init__(self):
         print("", end = "")
     
+    
     def analyze_video():
         return "Fancy information from video analysis."
     
