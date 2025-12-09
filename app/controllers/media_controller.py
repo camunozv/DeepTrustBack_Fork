@@ -1,5 +1,5 @@
 from app.services import Analyzer
-from config.db import conn
+#from config.db import conn
 from fastapi import APIRouter
 from models.detection_log_model import DetectionLogs
 from schemas.detection_log import DetectionLog # used for receiving information from the front.

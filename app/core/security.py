@@ -3,8 +3,10 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from models.schemas import UserInDB
 from datetime import datetime, timedelta, timezone
-
 import os
+
+# The content in this file is inteded to be used for the user auth.
+# Not finished yet, ignore...
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
