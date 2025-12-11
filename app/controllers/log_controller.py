@@ -12,7 +12,6 @@ log_service = LogService()
 def get_all_logs():
     list_of_logs = log_service.get_all_logs()
     
-    # Convert tuples to Pydantic models
     result = []
     for log in list_of_logs:
         result.append(DetectionLog(
@@ -27,10 +26,19 @@ def get_all_logs():
 
 @log_handler.get("/by_state")
 def get_logs_by_state(state : str):
-    
+        
     list_of_logs = log_service.get_logs_by_state(state)
     
-    return ""
+    result = []
+    for log in list_of_logs:
+        result.append(DetectionLog(
+            id=log[0],
+            is_deepfake=log[1],
+            date=log[2],
+            hour=log[3]
+        ))
+    
+    return result
 
 
 @log_handler.delete("/delete_by_id")

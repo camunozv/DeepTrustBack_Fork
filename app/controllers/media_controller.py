@@ -7,6 +7,8 @@ from fastapi.encoders import jsonable_encoder
 from models.detection_log_model import detection_log
 from config.db import conn
 
+from services.log_service import LogService
+
 
 media_handler = APIRouter()
 
@@ -36,12 +38,15 @@ async def post_audio(file: UploadFile = File(...)):
     """
     
     analyzer = Analyzer()
-    # Read the file content as bytes
+
     audio_data = await file.read()
+    
     result = analyzer.analyze_audio(audio_data)
     
     mock_log = {"isDeepFake" : True, "date" : "11/11/2021", "hour" : "(00:00:00)"}
-    
-    conn.execute(detection_log.insert().values(mock_log))
         
+    log_service = LogService()
+    
+    log_service.save_log(mock_log)
+    
     return jsonable_encoder(result)
