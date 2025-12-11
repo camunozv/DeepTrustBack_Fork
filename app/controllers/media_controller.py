@@ -1,14 +1,7 @@
 from services.analyzer import Analyzer
-#from config.db import conn
 from fastapi import APIRouter, UploadFile, File
-from schemas.detection_log_schema import DetectionLog
 from fastapi.encoders import jsonable_encoder
-
-from models.detection_log_model import detection_log
-from config.db import conn
-
 from services.log_service import LogService
-
 
 media_handler = APIRouter()
 

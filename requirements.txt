@@ -7,3 +7,5 @@ sqlalchemy[asyncio]
 asyncpg
 requests
 python-dotenv
+psycopg2-binary
+cryptography

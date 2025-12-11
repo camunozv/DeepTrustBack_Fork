@@ -13,8 +13,7 @@ class LogService:
     def get_all_logs(self):        
         return conn.execute(detection_log.select()).fetchall()
     
-    def get_logs_by_state(self, state : str):
-                
+    def get_logs_by_state(self, state : str):   
         return conn.execute(
             detection_log.select().where(detection_log.c.isDeepFake == state.lower())
         ).fetchall()

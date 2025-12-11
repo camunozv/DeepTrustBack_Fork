@@ -1,7 +1,5 @@
 from fastapi import APIRouter
-from fastapi.encoders import jsonable_encoder
 from services.log_service import LogService
-from datetime import date, time
 from schemas.detection_log_schema import DetectionLog
 from typing import List
 
@@ -25,7 +23,7 @@ def get_all_logs():
 
 
 @log_handler.get("/by_state")
-def get_logs_by_state(state : str):
+def get_logs_by_state(state : str, response_model=List[DetectionLog]):
         
     list_of_logs = log_service.get_logs_by_state(state)
     
@@ -43,6 +41,9 @@ def get_logs_by_state(state : str):
 
 @log_handler.delete("/delete_by_id")
 def delete_log(id : int):
+    """
+    Not implemented yet.
+    """
     
     result_of_deletion = log_service.delete_log_by_id(id)
     
