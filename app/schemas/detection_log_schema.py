@@ -1,6 +1,14 @@
 from pydantic import BaseModel
+from datetime import date, time
 
 class DetectionLog(BaseModel):
-    isDeepfake: bool
-    date: str
-    hour: str
+    id: int
+    is_deepfake: bool
+    date: date
+    hour: time
+    
+    class Config:
+        json_encoders = {
+            date: lambda v: v.isoformat(),
+            time: lambda v: v.isoformat()
+        }

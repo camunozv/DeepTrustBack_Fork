@@ -1,18 +1,28 @@
 from fastapi import APIRouter
 from fastapi.encoders import jsonable_encoder
 from services.log_service import LogService
+from datetime import date, time
+from schemas.detection_log_schema import DetectionLog
+from typing import List
 
 log_handler = APIRouter()
 log_service = LogService()
 
-@log_handler.get("/all")
+@log_handler.get("/all", response_model=List[DetectionLog])
 def get_all_logs():
+    list_of_logs = log_service.get_all_logs()
     
-    list_of_logs = log_service.get_all_logs()       
-        
-    print(list_of_logs)
+    # Convert tuples to Pydantic models
+    result = []
+    for log in list_of_logs:
+        result.append(DetectionLog(
+            id=log[0],
+            is_deepfake=log[1],
+            date=log[2],
+            hour=log[3]
+        ))
     
-    return ""
+    return result
 
 
 @log_handler.get("/by_state")
