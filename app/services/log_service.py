@@ -1,5 +1,4 @@
-from config.db import conn
-from app.schemas.detection_log import DetectionLog
+from schemas.detection_log_schema import DetectionLog
 
 
 class LogService:

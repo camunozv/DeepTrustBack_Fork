@@ -1,8 +1,7 @@
-from app.services import Analyzer
+from services.analyzer import Analyzer
 #from config.db import conn
 from fastapi import APIRouter, UploadFile, File
-from models.detection_log_model import DetectionLogs
-from schemas.detection_log import DetectionLog # used for receiving information from the front.
+from schemas.detection_log_schema import DetectionLog # used for receiving information from the front.
 from fastapi.encoders import jsonable_encoder
 
 media_handler = APIRouter()
@@ -36,5 +35,7 @@ async def post_audio(file: UploadFile = File(...)):
     # Read the file content as bytes
     audio_data = await file.read()
     result = analyzer.analyze_audio(audio_data)
+    
+    print(result)
     
     return jsonable_encoder(result)
