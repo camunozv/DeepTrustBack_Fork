@@ -1,9 +1,14 @@
-from sqlalchemy import Table, Column, Boolean, ForeignKey, Integer, String, Date, Time
-from config.db import Base
+from sqlalchemy import Table, Column, Boolean, Integer, Date, Time
+from config.db import meta, engine
 
-class DetectionLogs (Base):
-    __tablename__ = "DetectionLog"
-    id = Column (Integer, primary_key = True)
-    is_deepfake = Column(Boolean, index = True, default = False)
-    date = Column(Date, index = True)
-    hour = Column(Time, index = True)
+detection_log = Table(
+    "DetectionLog",
+    meta,
+    Column("id", Integer, primary_key=True),
+    Column("isDeepFake", Boolean, index=True, default=False),
+    Column("date", Date, index=True),
+    Column("hour", Time, index=True),
+)
+
+meta.drop_all(engine) # Uncomment for just creating not dropping.
+meta.create_all(engine)

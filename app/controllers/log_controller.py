@@ -8,7 +8,9 @@ log_service = LogService()
 @log_handler.get("/all")
 def get_all_logs():
     
-    list_of_logs = log_service.get_all_logs()
+    list_of_logs = log_service.get_all_logs()       
+        
+    print(list_of_logs)
     
     return ""
 

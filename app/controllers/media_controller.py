@@ -1,8 +1,12 @@
 from services.analyzer import Analyzer
 #from config.db import conn
 from fastapi import APIRouter, UploadFile, File
-from schemas.detection_log_schema import DetectionLog # used for receiving information from the front.
+from schemas.detection_log_schema import DetectionLog
 from fastapi.encoders import jsonable_encoder
+
+from models.detection_log_model import detection_log
+from config.db import conn
+
 
 media_handler = APIRouter()
 
@@ -36,6 +40,8 @@ async def post_audio(file: UploadFile = File(...)):
     audio_data = await file.read()
     result = analyzer.analyze_audio(audio_data)
     
-    print(result)
+    mock_log = {"isDeepFake" : True, "date" : "11/11/2021", "hour" : "(00:00:00)"}
     
+    conn.execute(detection_log.insert().values(mock_log))
+        
     return jsonable_encoder(result)

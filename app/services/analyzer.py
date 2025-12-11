@@ -3,11 +3,12 @@ from services.video_analyzer import VideoAnalyzer
 
 class Analyzer:
     
-    audio_analyzer = AudioAnalyzer()
-    video_analyzer = VideoAnalyzer()
+    audio_analyzer = None
+    video_analyzer = None
     
     def __init__(self):
-        print("", end = "")
+        self.audio_analyzer = AudioAnalyzer()
+        self.video_analyzer = VideoAnalyzer()
             
     def analyze_audio(self, audio_data: bytes):
         
