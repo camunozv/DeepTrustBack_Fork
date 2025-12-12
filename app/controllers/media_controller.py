@@ -2,6 +2,7 @@ from services.analyzer import Analyzer
 from fastapi import APIRouter, UploadFile, File
 from fastapi.encoders import jsonable_encoder
 from services.log_service import LogService
+from datetime import date, datetime
 
 media_handler = APIRouter()
 
@@ -20,6 +21,13 @@ async def post_video(file: UploadFile = File(...)):
     audio_data = await file.read()
     
     #result = analyzer.analyze_video(audio_data)
+            
+    log_service = LogService()
+    
+    log = {"isDeepFake" : True, "date" : date.today(), "hour" : datetime.now().time()}
+            
+    log_service.save_log(log)
+    
     result = {"Mock" : "Result"}
     
     return jsonable_encoder(result)
@@ -41,10 +49,10 @@ async def post_audio(file: UploadFile = File(...)):
     
     result = analyzer.analyze_audio(audio_data)
     
-    mock_log = {"isDeepFake" : True, "date" : "11/11/2021", "hour" : "(00:00:00)"}
+    log = {"isDeepFake" : True, "date" : date.today(), "hour" : datetime.now().time()}
         
     log_service = LogService()
     
-    log_service.save_log(mock_log)
+    log_service.save_log(log)
     
     return jsonable_encoder(result)
