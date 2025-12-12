@@ -6,7 +6,7 @@ from services.log_service import LogService
 media_handler = APIRouter()
 
 @media_handler.post("/analyze_video")
-def post_video(received_video):
+async def post_video(file: UploadFile = File(...)):
     """
     This function is going to:
     1. Receive the information from a video.
@@ -14,8 +14,13 @@ def post_video(received_video):
     3. Save the detection log within the database.
     4. Return a response about what the ML model has detected.
     """    
+    
     analyzer = Analyzer()
-    result = analyzer.analyze_video(received_video)
+
+    audio_data = await file.read()
+    
+    #result = analyzer.analyze_video(audio_data)
+    result = {"Mock" : "Result"}
     
     return jsonable_encoder(result)
 
