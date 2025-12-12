@@ -10,9 +10,9 @@ class Analyzer:
         self.audio_analyzer = AudioAnalyzer()
         self.video_analyzer = VideoAnalyzer()
             
-    def analyze_audio(self, audio_data: bytes):
+    def analyze_audio(self, audio_data: bytes, filename: str | None = None, content_type: str | None = None):
         
-        result = self.audio_analyzer.analyze_audio(audio_data)
+        result = self.audio_analyzer.analyze_audio(audio_data, filename=filename, content_type=content_type)
         
         return result
     
