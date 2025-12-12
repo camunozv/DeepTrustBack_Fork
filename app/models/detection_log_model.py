@@ -1,7 +1,6 @@
 import os
 
 from sqlalchemy import Table, Column, Boolean, Integer, Date, Time, Float, String, text
-
 from app.config.db import meta, engine
 
 detection_log = Table(
