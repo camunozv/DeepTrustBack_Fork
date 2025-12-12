@@ -14,19 +14,13 @@ class AudioAnalyzer:
     """
         
     def __init__(self):
-        self.api_url = os.getenv("HUGGINGFACE_API_URL")
+        self.api_url = os.getenv("HUGGINGFACE_AUDIO_API_URL")
         self.api_key = os.getenv("HUGGINGFACE_API_KEY")
         # DEBUG: show config presence (never print full key)
-        try:
-            masked = None
-            if self.api_key:
-                masked = ("*" * max(0, len(self.api_key) - 4)) + self.api_key[-4:]
-            print(
-                f"AudioAnalyzer.__init__ api_url_set={bool(self.api_url)} "
-                f"api_key_set={bool(self.api_key)} api_key_masked={masked}"
-            )
-        except Exception as e:
-            print(f"AudioAnalyzer.__init__ DEBUG failed: {type(e).__name__}: {e}")
+        if not self.api_key:
+            raise ValueError("HUGGINGFACE_API_KEY is not set")
+        if not self.api_url:
+            raise ValueError("HUGGINGFACE_AUDIO_API_URL is not set")
         
     
     def analyze_audio(self, audio_bytes):
@@ -52,7 +46,7 @@ class AudioAnalyzer:
 
         try:
             if not self.api_url:
-                err = "HUGGINGFACE_API_URL is not set"
+                err = "HUGGINGFACE_AUDIO_API_URL is not set"
                 print(f"AudioAnalyzer DEBUG: {err}")
                 return {"error": err}
 
