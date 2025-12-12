@@ -5,9 +5,9 @@ class VideoAnalyzer:
     """
     
     def __init__(self):
-        print("", end = "")
+        pass
     
     
-    def analyze_video():
-        return "Fancy information from video analysis."
+    def analyze_video(self, video_bytes: bytes):
+        raise NotImplementedError("Video analysis is not implemented yet.")
     

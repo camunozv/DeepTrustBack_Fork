@@ -19,6 +19,6 @@ class Analyzer:
     
     def analyze_video(self, video : str):
         
-        result = self.video_analyzer.analyze_video()
+        result = self.video_analyzer.analyze_video(video)
         
         return result
