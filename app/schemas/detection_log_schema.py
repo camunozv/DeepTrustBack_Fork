@@ -1,11 +1,13 @@
 from pydantic import BaseModel
 from datetime import date, time
+from typing import Optional
 
 class DetectionLog(BaseModel):
-    id: int
-    is_deepfake: bool
+    id: Optional[int] = None
     date: date
     hour: time
+    classification: Optional[str] = None  # "Deepfake" | "Bonafide"
+    score: Optional[float] = None  # normalized 0..100
     
     class Config:
         json_encoders = {
