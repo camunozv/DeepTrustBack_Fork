@@ -23,8 +23,4 @@ class LogService:
         return conn.execute(
             detection_log.select().where(detection_log.c.isDeepFake == state.lower())
         ).fetchall()
-    
-    
-    def delete_log_by_id(log_id: int):
-        return "deleted successfully"
-    
+        
