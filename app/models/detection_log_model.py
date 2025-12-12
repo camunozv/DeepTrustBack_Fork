@@ -1,5 +1,5 @@
 from sqlalchemy import Table, Column, Boolean, Integer, Date, Time
-from config.db import meta, engine
+from app.config.db import meta, engine
 
 detection_log = Table(
     "DetectionLog",

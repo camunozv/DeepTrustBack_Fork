@@ -1,5 +1,5 @@
-from services.audio_analyzer import AudioAnalyzer
-from services.video_analyzer import VideoAnalyzer
+from app.services.audio_analyzer import AudioAnalyzer
+from app.services.video_analyzer import VideoAnalyzer
 
 class Analyzer:
     
