@@ -17,8 +17,11 @@ class Analyzer:
         return result
     
     
-    def analyze_video(self, video_data: bytes, filename: str | None = None):
-        
-        result = self.video_analyzer.analyze_video(video_data, filename=filename)
-        
+    def analyze_video(self, video_data: bytes, filename: str | None = None, *, seconds: int = 10, frames: int = 10):
+        result = self.video_analyzer.analyze_video(
+            video_data,
+            filename=filename,
+            seconds=seconds,
+            frames=frames,
+        )
         return result

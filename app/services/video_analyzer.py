@@ -18,7 +18,7 @@ class VideoAnalyzer:
     Video analyzer pipeline:
     - Accepts video input as bytes (raw file bytes) OR a base64-encoded string/bytes.
     - Restricts analysis to the first N seconds (default: 10s).
-    - Randomly samples K frames (default: 5) from that window.
+    - Randomly samples K frames (default: 10) from that window.
     - Sends each sampled frame (PNG base64) to an image inference endpoint.
     """
 
@@ -109,7 +109,7 @@ class VideoAnalyzer:
     #     # app/services/video_analyzer.py -> app -> repo root
     #     return Path(__file__).resolve().parents[2]
 
-    def analyze_video(self, video_input, *, filename: str | None = None, seconds: int = 10, frames: int = 5) -> dict:
+    def analyze_video(self, video_input, *, filename: str | None = None, seconds: int = 10, frames: int = 10) -> dict:
         """
         Returns a dict with:
         - sampled_frame_indices

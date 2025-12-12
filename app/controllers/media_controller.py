@@ -121,7 +121,10 @@ class VideoAnalysisResponse(BaseModel):
         ...,
         ge=0.0,
         le=100.0,
-        description="Model confidence score (0..100) for the chosen label (max of Deepfake vs Realism), scaled from 0..1 by multiplying by 100.",
+        description=(
+            "Mean Realism score (0..100) aggregated across up to 10 sampled frames. "
+            "Higher means 'more real'."
+        ),
         examples=[12.0, 55.0, 97.0],
     )
 
@@ -166,7 +169,8 @@ async def post_video(
     video_data = await file.read()
     
     try:
-        result = analyzer.analyze_video(video_data, filename=getattr(file, "filename", None))
+        # Sample enough frames to make the final decision more stable.
+        result = analyzer.analyze_video(video_data, filename=getattr(file, "filename", None), frames=10, seconds=10)
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Video inference failed: {type(e).__name__}: {e}")
 
@@ -180,11 +184,13 @@ async def post_video(
     #   {"label": "Realism", "score": 0.46}
     # ]
     #
-    # Rule:
-    # - choose the item with the highest score
-    # - classification = "Deepfake" if chosen label is Deepfake else "Bonafide"
-    # - score = chosen score (0..1)
-    def _extract_best_label_and_score(output) -> tuple[str, float] | None:
+    # Aggregation rule (less sensitive than max-of-one-frame):
+    # - Extract the per-frame "Realism" score (0..1).
+    # - Compute mean Realism score over up to 10 frames.
+    # - If mean Realism >= 10 (on 0..100 scale) => Bonafide else Deepfake.
+    REAL_MEAN_THRESHOLD = 10.0
+
+    def _extract_label_to_score(output) -> dict[str, float]:
         try:
             items = output
             if isinstance(output, dict):
@@ -195,53 +201,61 @@ async def post_video(
                     items = [output]
 
             if not isinstance(items, list):
-                return None
-            best_label = None
-            best_score = None
+                return {}
+
+            out: dict[str, float] = {}
 
             for it in items:
                 if not isinstance(it, dict):
                     continue
                 label = str(it.get("label", "")).strip()
                 score = it.get("score", None)
-                # print(label, score)
                 try:
                     score_f = float(score)
                 except Exception:
                     continue
 
-                if best_score is None or score_f > best_score:
-                    best_score = score_f
-                    best_label = label
+                if label:
+                    out[label.strip().lower()] = score_f
 
-            if best_label is None or best_score is None:
-                return None
-
-            return (best_label, float(best_score))
+            return out
         except Exception:
-            return None
+            return {}
+
+    def _get_realism_score_01(label_scores: dict[str, float]) -> float | None:
+        # Common label variants across image deepfake models
+        for key in ("realism", "real", "bonafide", "bona fide"):
+            if key in label_scores:
+                s = label_scores[key]
+                try:
+                    return max(0.0, min(float(s), 1.0))
+                except Exception:
+                    return None
+        return None
 
     frame_results = []
     if isinstance(result, dict):
         frame_results = result.get("per_frame_results") or []
 
-    frame_winners: list[tuple[str, float]] = []
+    realism_scores: list[float] = []
     for fr in frame_results:
         if not isinstance(fr, dict):
             continue
         out = fr.get("output")
-        winner = _extract_best_label_and_score(out)
-        if winner is not None:
-            frame_winners.append(winner)
+        label_scores = _extract_label_to_score(out)
+        rs = _get_realism_score_01(label_scores)
+        if rs is not None:
+            realism_scores.append(rs)
 
-    if not frame_winners:
+    if not realism_scores:
         # Nothing parsable; avoid logging misleading score.
         raise HTTPException(status_code=502, detail="Video inference succeeded but no parsable frame scores were returned.")
 
-    # "take the score more bigger": take the max winner across frames.
-    best_label, best_score = max(frame_winners, key=lambda t: t[1])
-    normalized_score = max(0.0, min(best_score, 1.0)) * 100.0
-    classification = "Deepfake" if str(best_label).strip().lower() == "deepfake" else "Bonafide"
+    # Mean of up to 10 realism scores (0..1), then scale to 0..100.
+    scores_for_mean = realism_scores[:10]
+    mean_realism = sum(scores_for_mean) / float(len(scores_for_mean))
+    normalized_score = max(0.0, min(mean_realism, 1.0)) * 100.0
+    classification = "Bonafide" if normalized_score >= REAL_MEAN_THRESHOLD else "Deepfake"
     is_deepfake = classification == "Deepfake"
 
     # ---- Persist log (same pattern as audio) ----
