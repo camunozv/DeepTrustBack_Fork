@@ -1,7 +1,7 @@
-from services.analyzer import Analyzer
+from app.services.analyzer import Analyzer
 from fastapi import APIRouter, UploadFile, File
 from fastapi.encoders import jsonable_encoder
-from services.log_service import LogService
+from app.services.log_service import LogService
 from datetime import date, datetime
 
 media_handler = APIRouter()

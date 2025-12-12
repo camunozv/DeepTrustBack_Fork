@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from controllers.log_controller import log_handler
-from controllers.media_controller import media_handler
+from app.controllers.log_controller import log_handler
+from app.controllers.media_controller import media_handler
 
 app = FastAPI()
 

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from services.log_service import LogService
-from schemas.detection_log_schema import DetectionLog
+from app.services.log_service import LogService
+from app.schemas.detection_log_schema import DetectionLog
 from typing import List
 
 log_handler = APIRouter()

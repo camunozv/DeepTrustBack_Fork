@@ -1,6 +1,6 @@
-from schemas.detection_log_schema import DetectionLog
-from models.detection_log_model import detection_log
-from config.db import conn
+from app.schemas.detection_log_schema import DetectionLog
+from app.models.detection_log_model import detection_log
+from app.config.db import conn
 
 class LogService:
     
