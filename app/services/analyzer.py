@@ -1,5 +1,5 @@
-from services.audio_analyzer import AudioAnalyzer
-from services.video_analyzer import VideoAnalyzer
+from app.services.audio_analyzer import AudioAnalyzer
+from app.services.video_analyzer import VideoAnalyzer
 
 class Analyzer:
     
@@ -19,6 +19,6 @@ class Analyzer:
     
     def analyze_video(self, video : str):
         
-        result = self.video_analyzer.analyze_video()
+        result = self.video_analyzer.analyze_video(video)
         
         return result
