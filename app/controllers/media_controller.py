@@ -111,6 +111,25 @@ class AudioAnalysisResponse(BaseModel):
         examples=[0.7, 45.2, 98.9],
     )
 
+
+class VideoAnalysisResponse(BaseModel):
+    """
+    Output payload for `POST /analyze_video`.
+
+    The underlying video pipeline samples frames and calls an image inference endpoint.
+    This endpoint returns a minimal summary, similar to `/analyze_audio`.
+    """
+
+    classification: str = Field(..., examples=["Bonafide", "Deepfake"])
+    score: float = Field(
+        ...,
+        ge=0.0,
+        le=1.0,
+        description="Model confidence score (0..1) for the chosen label (max of Deepfake vs Realism).",
+        examples=[0.12, 0.55, 0.97],
+    )
+
+
 media_handler = APIRouter()
 
 @media_handler.post(
@@ -123,14 +142,17 @@ media_handler = APIRouter()
         "- **Form field**: `file` (UploadFile)\n\n"
         "## What this endpoint does\n"
         "1. Reads the uploaded video bytes.\n"
-        "2. (Planned) Sends the video to a video deepfake inference pipeline.\n"
-        "3. (Planned) Stores a detection log entry.\n\n"
+        "2. Samples frames from the first seconds of the video and calls the configured image inference endpoint.\n"
+        "3. Derives a classification + score.\n"
+        "4. Stores a detection log entry.\n\n"
         "## Output\n"
-        "- **Current behavior**: returns **501 Not Implemented** until video inference exists."
+        "Returns a minimal JSON payload:\n"
+        "```json\n"
+        "{\"classification\": \"Bonafide\", \"score\": 0.72}\n"
+        "```"
     ),
-    responses={
-        501: {"description": "Video analysis is not implemented yet."},
-    },
+    response_model=VideoAnalysisResponse,
+    responses={200: {"description": "Classification + score."}, 502: {"description": "Upstream inference endpoint error."}},
 )
 async def post_video(
     file: UploadFile = File(..., description="Video file to analyze (multipart/form-data field name: `file`).")
@@ -148,12 +170,102 @@ async def post_video(
     video_data = await file.read()
     
     try:
-        result = analyzer.analyze_video(video_data)
-    except NotImplementedError as e:
-        # Avoid generating fake logs/results until video inference exists.
-        raise HTTPException(status_code=501, detail=str(e))
-            
-    return jsonable_encoder(result)
+        result = analyzer.analyze_video(video_data, filename=getattr(file, "filename", None))
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Video inference failed: {type(e).__name__}: {e}")
+
+    if isinstance(result, dict) and "error" in result:
+        raise HTTPException(status_code=502, detail=result["error"])
+
+    # ---- Derive score + classification from image endpoint outputs ----
+    # Endpoint output example (per frame):
+    # [
+    #   {"label": "Deepfake", "score": 0.54},
+    #   {"label": "Realism", "score": 0.46}
+    # ]
+    #
+    # Rule:
+    # - choose the item with the highest score
+    # - classification = "Deepfake" if chosen label is Deepfake else "Bonafide"
+    # - score = chosen score (0..1)
+    def _extract_best_label_and_score(output) -> tuple[str, float] | None:
+        try:
+            items = output
+            if isinstance(output, dict):
+                # Some endpoints return {"label": "...", "score": ...} or {"outputs": [...]}
+                if "outputs" in output and isinstance(output["outputs"], list):
+                    items = output["outputs"]
+                elif "label" in output and "score" in output:
+                    items = [output]
+
+            if not isinstance(items, list):
+                return None
+            best_label = None
+            best_score = None
+
+            for it in items:
+                if not isinstance(it, dict):
+                    continue
+                label = str(it.get("label", "")).strip()
+                score = it.get("score", None)
+                # print(label, score)
+                try:
+                    score_f = float(score)
+                except Exception:
+                    continue
+
+                if best_score is None or score_f > best_score:
+                    best_score = score_f
+                    best_label = label
+
+            if best_label is None or best_score is None:
+                return None
+
+            return (best_label, float(best_score))
+        except Exception:
+            return None
+
+    frame_results = []
+    if isinstance(result, dict):
+        frame_results = result.get("per_frame_results") or []
+
+    frame_winners: list[tuple[str, float]] = []
+    for fr in frame_results:
+        if not isinstance(fr, dict):
+            continue
+        out = fr.get("output")
+        winner = _extract_best_label_and_score(out)
+        if winner is not None:
+            frame_winners.append(winner)
+
+    if not frame_winners:
+        # Nothing parsable; avoid logging misleading score.
+        raise HTTPException(status_code=502, detail="Video inference succeeded but no parsable frame scores were returned.")
+
+    # "take the score more bigger": take the max winner across frames.
+    best_label, best_score = max(frame_winners, key=lambda t: t[1])
+    normalized_score = max(0.0, min(best_score, 1.0))
+    classification = "Deepfake" if str(best_label).strip().lower() == "deepfake" else "Bonafide"
+    is_deepfake = classification == "Deepfake"
+
+    # ---- Persist log (same pattern as audio) ----
+    log = {
+        "isDeepFake": is_deepfake,
+        "date": date.today(),
+        "hour": datetime.now().time(),
+        "classification": classification,
+        "score": normalized_score,
+    }
+
+    log_service = LogService()
+    log_service.save_log(log)
+
+    return jsonable_encoder(
+        {
+            "classification": classification,
+            "score": normalized_score,
+        }
+    )
 
 
 @media_handler.post(
