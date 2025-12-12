@@ -120,9 +120,9 @@ class VideoAnalysisResponse(BaseModel):
     score: float = Field(
         ...,
         ge=0.0,
-        le=1.0,
-        description="Model confidence score (0..1) for the chosen label (max of Deepfake vs Realism).",
-        examples=[0.12, 0.55, 0.97],
+        le=100.0,
+        description="Model confidence score (0..100) for the chosen label (max of Deepfake vs Realism), scaled from 0..1 by multiplying by 100.",
+        examples=[12.0, 55.0, 97.0],
     )
 
 
@@ -144,7 +144,7 @@ media_handler = APIRouter()
         "## Output\n"
         "Returns a minimal JSON payload:\n"
         "```json\n"
-        "{\"classification\": \"Bonafide\", \"score\": 0.72}\n"
+        "{\"classification\": \"Bonafide\", \"score\": 72.0}\n"
         "```"
     ),
     response_model=VideoAnalysisResponse,
@@ -240,7 +240,7 @@ async def post_video(
 
     # "take the score more bigger": take the max winner across frames.
     best_label, best_score = max(frame_winners, key=lambda t: t[1])
-    normalized_score = max(0.0, min(best_score, 1.0))
+    normalized_score = max(0.0, min(best_score, 1.0)) * 100.0
     classification = "Deepfake" if str(best_label).strip().lower() == "deepfake" else "Bonafide"
     is_deepfake = classification == "Deepfake"
 
