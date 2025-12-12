@@ -6,7 +6,11 @@ from typing import List
 log_handler = APIRouter()
 log_service = LogService()
 
-@log_handler.get("/all", response_model=List[DetectionLog])
+@log_handler.get("/logs/get_by_id")
+def get_log_by_id(id: int):    
+    return log_service.get_log_by_id(id) 
+
+@log_handler.get("/logs/all", response_model=List[DetectionLog])
 def get_all_logs():
     list_of_logs = log_service.get_all_logs()
     
@@ -22,7 +26,7 @@ def get_all_logs():
     return result
 
 
-@log_handler.get("/by_state")
+@log_handler.get("/logs/by_state")
 def get_logs_by_state(state : str, response_model=List[DetectionLog]):
         
     list_of_logs = log_service.get_logs_by_state(state)
@@ -39,12 +43,6 @@ def get_logs_by_state(state : str, response_model=List[DetectionLog]):
     return result
 
 
-@log_handler.delete("/delete_by_id")
-def delete_log(id : int):
-    """
-    Not implemented yet.
-    """
-    
-    result_of_deletion = log_service.delete_log_by_id(id)
-    
-    return ""
+@log_handler.delete("/logs/delete_by_id")
+def delete_log(id : int):    
+    return log_service.delete_log_by_id(id)

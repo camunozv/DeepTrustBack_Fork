@@ -1,7 +1,6 @@
-from jose import JWTError, jwt
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from jose import jwt
+from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from models.schemas import UserInDB
 from datetime import datetime, timedelta, timezone
 import os
 
@@ -35,20 +34,20 @@ def get_password_hash(password):
     return pwd_context.hash(password)
 
 
-def get_user(db, username: str):
-    if username in db:
-        return UserInDB(**db[username])
+#def get_user(db, username: str):
+#    if username in db:
+#        return UserInDB(**db[username])
 
 
-def authenticate_user(db, username: str, password: str):
-    user = get_user(db, username)
-
-    if not user:
-        return False
-    elif not verify_password(password, user.hash_password):
-        return False
-    else:
-        return user
+#def authenticate_user(db, username: str, password: str):
+ #   user = get_user(db, username)
+#
+  #  if not user:
+    #    return False
+   # elif not verify_password(password, user.hash_password):
+     #   return False
+    #else:
+     #   return user
 
 
 def create_access_token(data: dict, expires_delta: timedelta or None = None):

@@ -9,6 +9,12 @@ class LogService:
     
     def save_log(self, log_to_save: DetectionLog):        
         return conn.execute(detection_log.insert().values(log_to_save))
+    
+    def delete_log_by_id(self, id : int):
+        return conn.execute(detection_log.delete().where(detection_log.c.id == id))
+    
+    def get_log_by_id(self, id: int):
+        return conn.execute(detection_log.select().where(detection_log.c.id == id))
 
     def get_all_logs(self):        
         return conn.execute(detection_log.select()).fetchall()
