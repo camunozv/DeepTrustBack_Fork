@@ -1,7 +1,7 @@
 from app.schemas.detection_log_schema import DetectionLog
 from app.models.detection_log_model import detection_log
 from app.config.db import engine
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 class LogService:
     
@@ -15,14 +15,16 @@ class LogService:
     def save_log(self, log_to_save: Dict[str, Any]):
         conn = self._get_conn()
         try:
-            return conn.execute(detection_log.insert().values(log_to_save))
+            conn.execute(detection_log.insert().values(log_to_save))
+            return conn.commit()
         finally:
             conn.close()
     
     def delete_log_by_id(self, id: int):
         conn = self._get_conn()
         try:
-            return conn.execute(detection_log.delete().where(detection_log.c.id == id))
+            conn.execute(detection_log.delete().where(detection_log.c.id == id))
+            return conn.commit()
         finally:
             conn.close()
     
